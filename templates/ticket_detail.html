@@ -1,63 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ticket Details</title>
+{% extends 'parts/base_ticket.html' %}
+
+{% block title %}
+Ticket Details
+{% endblock %}
+
+{% block extra_css %}
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: #f4f7fb;
-            color: #1e293b;
-        }
-
-        .page {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .navbar {
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 18px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
-        }
-
-        .logo {
-            font-size: 22px;
-            font-weight: 700;
-            color: #4f46e5;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #475569;
-            font-size: 15px;
-            padding: 10px 14px;
-            border-radius: 10px;
-            transition: 0.2s ease;
-        }
-
-        .nav-links a:hover {
-            background: #eef2ff;
-            color: #4338ca;
-        }
-
         .nav-links .primary-link {
             background: #4f46e5;
             color: #ffffff;
@@ -395,45 +343,6 @@
             flex-wrap: wrap;
         }
 
-        .file-upload {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .file-label {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: #eef2ff;
-            color: #4338ca;
-            padding: 10px 14px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            overflow: hidden;
-            transition: 0.2s ease;
-        }
-
-        .file-label:hover {
-            background: #e0e7ff;
-        }
-
-        .file-label input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .file-name {
-            font-size: 14px;
-            color: #64748b;
-        }
-
         .send-btn {
             display: inline-flex;
             align-items: center;
@@ -548,18 +457,18 @@
         }
 
     </style>
-</head>
-<body>
+{% endblock %}
+
 <div class="page">
-    <div class="navbar">
+    {% block navbar %}
         <div class="logo">Support Service</div>
         <div class="nav-links">
             <a href="/" class="primary-link">My tickets</a>
             <a href="/ticket_create/">Create ticket</a>
         </div>
-    </div>
+    {% endblock %}
 
-    <div class="container">
+    {% block content %}
 
         <div class="back-link">
             <a href="/">← Back to tickets</a>
@@ -723,26 +632,26 @@
                 </div>
             </section>
         </div>
-    </div>
-</div>
 
-<script>
-    const fileUploads = document.querySelectorAll('.file-upload');
+        <script>
+            const fileUploads = document.querySelectorAll('.file-upload');
 
-    fileUploads.forEach(upload => {
-        const input = upload.querySelector('input[type="file"]');
-        const fileName = upload.querySelector('.file-name');
+            fileUploads.forEach(upload => {
+                const input = upload.querySelector('input[type="file"]');
+                const fileName = upload.querySelector('.file-name');
 
-        if (input) {
-            input.addEventListener('change', function () {
-                if (this.files.length > 0) {
-                    fileName.textContent = this.files[0].name;
-                } else {
-                    fileName.textContent = "No file chosen";
+                if (input) {
+                    input.addEventListener('change', function () {
+                        if (this.files.length > 0) {
+                            fileName.textContent = this.files[0].name;
+                        } else {
+                            fileName.textContent = "No file chosen";
+                        }
+                    });
                 }
             });
-        }
-    });
-</script>
-</body>
-</html>
+        </script>
+
+    {% endblock %}
+</div>
+
