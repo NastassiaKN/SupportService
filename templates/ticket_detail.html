@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Details</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7fb;
+            color: #1e293b;
+        }
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #475569;
+            font-size: 15px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            transition: 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            background: #eef2ff;
+            color: #4338ca;
+        }
+
+        .nav-links .primary-link {
+            background: #4f46e5;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .nav-links .primary-link:hover {
+            background: #4338ca;
+            color: #ffffff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 20px 40px;
+        }
+
+        .page-header {
+            margin-bottom: 22px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .sidebar-card,
+        .chat-shell {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        }
+
+        .sidebar-card {
+            padding: 24px;
+            position: sticky;
+            top: 24px;
+        }
+
+        .sidebar-title {
+            margin: 0 0 18px;
+            font-size: 24px;
+            line-height: 1.35;
+            color: #0f172a;
+        }
+
+        .ticket-info {
+            display: grid;
+            gap: 16px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .ticket-info strong {
+            color: #334155;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-new {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .status-in-progress {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status-resolved {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-closed {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .attachments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .attachment-item {
+            display: block;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+            color: #334155;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.2s ease;
+            word-break: break-word;
+        }
+
+        .attachment-item:hover {
+            background: #eef2ff;
+            color: #4338ca;
+        }
+
+        .chat-shell {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 760px;
+        }
+
+        .chat-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            background: #ffffff;
+        }
+
+        .chat-header-left h3 {
+            margin: 0 0 4px;
+            font-size: 20px;
+            color: #0f172a;
+        }
+
+        .chat-header-left p {
+            margin: 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .chat-status {
+            font-size: 13px;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        .messages-area {
+            flex: 1;
+            background: #eef3f8;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .messages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .message-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .message-row.own {
+            justify-content: flex-end;
+        }
+
+        .message-row.other {
+            justify-content: flex-start;
+        }
+
+        .message-row.own .message-inner {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 10px;
+            align-items: flex-end;
+            max-width: 78%;
+        }
+
+        .message-row.other .message-inner {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            align-items: flex-end;
+            max-width: 78%;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            background: #64748b;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+        }
+
+        .message-row.own .avatar {
+            background: #4f46e5;
+        }
+
+        .message-row.other .avatar {
+            background: #0f766e;
+        }
+
+        .message-bubble {
+            padding: 12px 14px 10px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.55;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            word-break: break-word;
+        }
+
+        .message-row.other .message-bubble {
+            background: #ffffff;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 8px;
+        }
+
+        .message-row.own .message-bubble {
+            background: #dbeafe;
+            color: #1e3a8a;
+            border: 1px solid #bfdbfe;
+            border-bottom-right-radius: 8px;
+        }
+
+        .message-author {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            opacity: 0.85;
+        }
+
+        .message-text {
+            font-size: 14px;
+        }
+
+        .message-time {
+            margin-top: 8px;
+            font-size: 12px;
+            opacity: 0.7;
+            text-align: right;
+        }
+
+        .message-row.own .attachment-item {
+            background: rgba(255, 255, 255, 0.45);
+            border: 1px solid #bfdbfe;
+            color: #1e3a8a;
+        }
+
+        .message-row.own .attachment-item:hover {
+            background: rgba(255, 255, 255, 0.75);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #64748b;
+            padding: 28px 12px;
+            background: #ffffff;
+            border: 1px dashed #cbd5e1;
+            border-radius: 16px;
+        }
+
+        .reply-panel {
+            border-top: 1px solid #e2e8f0;
+            background: #ffffff;
+            padding: 16px 18px 18px;
+        }
+
+        .reply-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .reply-form textarea,
+        .reply-form input[type="text"],
+        .reply-form select {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            padding: 14px 16px;
+            font-size: 14px;
+            font-family: inherit;
+            background: #f8fafc;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .reply-form textarea:focus,
+        .reply-form input[type="text"]:focus,
+        .reply-form select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+            background: #ffffff;
+        }
+
+        .reply-form textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .reply-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .file-upload {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .file-label {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #eef2ff;
+            color: #4338ca;
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            overflow: hidden;
+            transition: 0.2s ease;
+        }
+
+        .file-label:hover {
+            background: #e0e7ff;
+        }
+
+        .file-label input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-name {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .send-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 14px;
+            padding: 12px 18px;
+            background: #4f46e5;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .send-btn:hover {
+            background: #4338ca;
+        }
+
+        .errorlist {
+            margin: 4px 0 0;
+            padding-left: 18px;
+            color: #dc2626;
+            font-size: 13px;
+        }
+
+        .form-errors {
+            margin-bottom: 4px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            font-size: 14px;
+        }
+
+        @media (max-width: 992px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-card {
+                position: static;
+            }
+
+            .message-row.own .message-inner,
+            .message-row.other .message-inner {
+                max-width: 92%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .page-header h1 {
+                font-size: 26px;
+            }
+
+            .container {
+                padding: 24px 16px 32px;
+            }
+
+            .messages-area {
+                padding: 14px;
+            }
+
+            .chat-header {
+                padding: 16px;
+            }
+
+            .reply-panel,
+            .sidebar-card {
+                padding: 16px;
+            }
+
+            .message-row.own .message-inner,
+            .message-row.other .message-inner {
+                max-width: 100%;
+            }
+
+            .reply-bottom {
+                align-items: stretch;
+            }
+
+            .send-btn {
+                width: 100%;
+            }
+        }
+
+        .back-link {
+            margin-bottom: 12px;
+        }
+
+        .back-link a {
+            text-decoration: none;
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s ease;
+        }
+
+        .back-link a:hover {
+            color: #4338ca;
+        }
+
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="navbar">
+        <div class="logo">Support Service</div>
+        <div class="nav-links">
+            <a href="/" class="primary-link">My tickets</a>
+            <a href="/ticket_create/">Create ticket</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="back-link">
+            <a href="/">← Back to tickets</a>
+        </div>
+
+        <div class="page-header">
+            <h1>Ticket details</h1>
+            <p>Follow the conversation and track the current status of your request.</p>
+        </div>
+
+        <div class="layout">
+            <aside class="sidebar-card">
+                <h2 class="sidebar-title">{{ ticket.title }}</h2>
+
+                <div class="ticket-info">
+                    <div>
+                        <strong>Status:</strong><br>
+                        {% if ticket.status == 'new' %}
+                            <span class="status-badge status-new">{{ ticket.get_status_display|default:ticket.status }}</span>
+                        {% elif ticket.status == 'in_progress' %}
+                            <span class="status-badge status-in-progress">{{ ticket.get_status_display|default:ticket.status }}</span>
+                        {% elif ticket.status == 'resolved' %}
+                            <span class="status-badge status-resolved">{{ ticket.get_status_display|default:ticket.status }}</span>
+                        {% elif ticket.status == 'closed' %}
+                            <span class="status-badge status-closed">{{ ticket.get_status_display|default:ticket.status }}</span>
+                        {% else %}
+                            <span class="status-badge">{{ ticket.status }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <strong>Created by:</strong><br>
+                        {{ ticket.created_by.username }}
+                    </div>
+
+                    <div>
+                        <strong>Created:</strong><br>
+                        {{ ticket.created_at }}
+                    </div>
+
+                    <div>
+                        <strong>Assigned to:</strong><br>
+                        {% if ticket.assigned_to %}
+                            {{ ticket.assigned_to.username }}
+                        {% else %}
+                            Not assigned yet
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <strong>Status updated:</strong><br>
+                        {{ ticket.status_updated_at }}
+                    </div>
+
+                    <div>
+                        <strong>Description:</strong><br>
+                        {{ ticket.description|linebreaks }}
+                    </div>
+
+                    {% if ticket.attachment %}
+                        <div>
+                            <strong>Attachment:</strong>
+                            <div class="attachments-list">
+                                <a href="{{ ticket.attachment.url }}" target="_blank" class="attachment-item">
+                                    {{ ticket.attachment.name }}
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </aside>
+
+            <section class="chat-shell">
+                <div class="chat-header">
+                    <div class="chat-header-left">
+                        <h3>Chat</h3>
+                        <p>Messages about this ticket</p>
+                    </div>
+                    <div class="chat-status">
+                        {{ comments|length }} message{{ comments|length|pluralize }}
+                    </div>
+                </div>
+
+                <div class="messages-area">
+                    <div class="messages-list">
+                        {% for comment in comments %}
+                            <div class="message-row {% if comment.author == request.user %}own{% else %}other{% endif %}">
+                                <div class="message-inner">
+                                    <div class="avatar">
+                                        {{ comment.author.username|first|upper }}
+                                    </div>
+
+                                    <div class="message-bubble">
+                                        <div class="message-author">
+                                            {{ comment.author.username }}
+                                        </div>
+
+                                        <div class="message-text">
+                                            {{ comment.text|linebreaksbr }}
+                                        </div>
+
+                                        {% if comment.attachment %}
+                                            <div class="attachments-list">
+                                                <a href="{{ comment.attachment.url }}" target="_blank" class="attachment-item">
+                                                    {{ comment.attachment.name }}
+                                                </a>
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="message-time">
+                                            {{ comment.created_at }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="empty-state">
+                                There are no messages yet. Start the chat below.
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="reply-panel">
+                    <form method="post" enctype="multipart/form-data" class="reply-form">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="form-errors">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div>
+                            {{ form.text }}
+                            {% if form.text.errors %}
+                                <div class="errorlist">
+                                    {{ form.text.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="reply-bottom">
+                            <div class="file-upload">
+                                <label class="file-label">
+                                    Attach file
+                                    {{ form.attachment }}
+                                </label>
+                                <span class="file-name">No file chosen</span>
+                            </div>
+
+                            <button type="submit" class="send-btn">Send message</button>
+                        </div>
+
+                        {% if form.attachment.errors %}
+                            <div class="errorlist">
+                                {{ form.attachment.errors }}
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script>
+    const fileUploads = document.querySelectorAll('.file-upload');
+
+    fileUploads.forEach(upload => {
+        const input = upload.querySelector('input[type="file"]');
+        const fileName = upload.querySelector('.file-name');
+
+        if (input) {
+            input.addEventListener('change', function () {
+                if (this.files.length > 0) {
+                    fileName.textContent = this.files[0].name;
+                } else {
+                    fileName.textContent = "No file chosen";
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
