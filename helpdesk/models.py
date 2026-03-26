@@ -1,3 +1,5 @@
+import os
+
 from django.db import models
 
 from django.contrib.auth import get_user_model
@@ -25,15 +27,55 @@ class Ticket(models.Model):
     def __str__(self):
         return self.title
 
-class Comment(models.Model):
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='comments')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
+    def get_file_extension(self):
+        if not self.attachment:
+            return ''
+        return os.path.splitext(self.attachment.name)[1].lower()
+
+    def is_image(self):
+        return self.get_file_extension() in ['.jpg', '.jpeg', '.png']
+
+    def is_video(self):
+        return self.get_file_extension() in ['.mp4']
+
+    def is_document(self):
+        return self.get_file_extension() in ['.pdf', '.doc', '.docx', '.txt']
+
+    def attachment_filename(self):
+        if not self.attachment:
+            return ''
+        return os.path.basename(self.attachment.name)
+
+class Message(models.Model):
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='messages')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
     text = models.TextField()
     attachment = models.FileField(upload_to='attachments/comments', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'Comment by {self.author.username} on ticket {self.ticket.title}'
+        return f'Message by {self.author.username} on ticket {self.ticket.title}'
+
+    def get_file_extension(self):
+        if not self.attachment:
+            return ''
+        return os.path.splitext(self.attachment.name)[1].lower()
+
+    def is_image(self):
+        return self.get_file_extension() in ['.jpg', '.jpeg', '.png']
+
+    def is_video(self):
+        return self.get_file_extension() in ['.mp4']
+
+    def is_document(self):
+        return self.get_file_extension() in ['.pdf', '.doc', '.docx', '.txt']
+
+    def attachment_filename(self):
+        if not self.attachment:
+            return ''
+        return os.path.basename(self.attachment.name)
+
+
 
 
 

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Ticket, Comment
+from .models import Ticket, Message
 
 class TicketForm(forms.ModelForm):
     class Meta:
@@ -14,14 +14,17 @@ class TicketForm(forms.ModelForm):
             })
         }
 
-class CommentForm(forms.ModelForm):
+class MessageForm(forms.ModelForm):
     class Meta:
-        model = Comment
+        model = Message
         fields = ['text', 'attachment']
         widgets = {
             'text': forms.Textarea(attrs={
                 'placeholder': 'Write your message...',
-                'rows': 4,
+                'rows': 2,
             })
         }
+
+
+
 

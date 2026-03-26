@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
-from .models import Ticket, Comment
+from .models import Ticket, Message
 
-from helpdesk.forms import TicketForm, CommentForm
+from .forms import TicketForm, MessageForm
 
 User = get_user_model()
 
@@ -27,25 +27,25 @@ def ticket_list(request):
 
 def ticket_detail(request, ticket_id):
     ticket = get_object_or_404(Ticket, pk=ticket_id)
-    comments = Comment.objects.filter(ticket_id=ticket_id)
+    messages = Message.objects.filter(ticket_id=ticket_id)
     referer = request.META.get('HTTP_REFERER')
 
     if request.method == 'POST':
-        form = CommentForm(request.POST, request.FILES)
+        form = MessageForm(request.POST, request.FILES)
 
         if form.is_valid():
-            comment = form.save(commit=False)
-            comment.author = request.user
-            comment.ticket = ticket
-            comment.save()
+            message = form.save(commit=False)
+            message.author = request.user
+            message.ticket = ticket
+            message.save()
             return redirect(referer)
 
     else:
-        form = CommentForm()
+        form = MessageForm()
 
     context = {
         'ticket': ticket,
-        'comments': comments,
+        'messages': messages,
         'form': form,
     }
 

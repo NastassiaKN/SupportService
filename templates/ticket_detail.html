@@ -63,22 +63,35 @@ Ticket Details
             margin-top: 8px;
         }
 
-        .attachment-item {
-            display: block;
-            padding: 10px 12px;
-            border: 1px solid #e2e8f0;
+        .attachment-preview {
+            max-width: 220px;
             border-radius: 12px;
-            background: #f8fafc;
-            color: #334155;
-            text-decoration: none;
-            font-size: 14px;
-            transition: 0.2s ease;
-            word-break: break-word;
+            margin-top: 8px;
+            display: block;
         }
 
-        .attachment-item:hover {
+        .attachment-video {
+            max-width: 260px;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .attachment-doc {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding: 8px 12px;
             background: #eef2ff;
+            border-radius: 10px;
             color: #4338ca;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .attachment-doc:hover {
+            background: #e0e7ff;
         }
 
         .chat-shell {
@@ -478,9 +491,23 @@ Ticket Details
                         <div>
                             <strong>Attachment:</strong>
                             <div class="attachments-list">
-                                <a href="{{ ticket.attachment.url }}" target="_blank" class="attachment-item">
-                                    {{ ticket.attachment.name }}
-                                </a>
+                                {% if ticket.is_image %}
+                                    <a href="{{ ticket.attachment.url }}" target="_blank">
+                                        <img src="{{ ticket.attachment.url }}" alt="Ticket attachment" class="attachment-preview">
+                                    </a>
+                                {% elif ticket.is_video %}
+                                    <video controls class="attachment-video">
+                                        <source src="{{ ticket.attachment.url }}">
+                                    </video>
+                                {% elif ticket.is_document %}
+                                    <a href="{{ ticket.attachment.url }}" target="_blank" class="attachment-doc">
+                                        {{ ticket.attachment_filename }}
+                                    </a>
+                                {% else %}
+                                    <a href="{{ ticket.attachment.url }}" target="_blank" class="attachment-doc">
+                                        {{ message.attachment_filename }}
+                                    </a>
+                                {% endif %}
                             </div>
                         </div>
                     {% endif %}
@@ -494,38 +521,50 @@ Ticket Details
                         <p>Messages about this ticket</p>
                     </div>
                     <div class="chat-status">
-                        {{ comments|length }} message{{ comments|length|pluralize }}
+                        {{ messages|length }} message{{ messages|length|pluralize }}
                     </div>
                 </div>
 
                 <div class="messages-area">
                     <div class="messages-list">
-                        {% for comment in comments %}
-                            <div class="message-row {% if comment.author == request.user %}own{% else %}other{% endif %}">
+                        {% for message in messages %}
+                            <div class="message-row {% if message.author == request.user %}own{% else %}other{% endif %}">
                                 <div class="message-inner">
                                     <div class="avatar">
-                                        {{ comment.author.username|first|upper }}
+                                        {{ message.author.username|first|upper }}
                                     </div>
 
                                     <div class="message-bubble">
                                         <div class="message-author">
-                                            {{ comment.author.username }}
+                                            {{ message.author.username }}
                                         </div>
 
                                         <div class="message-text">
-                                            {{ comment.text|linebreaksbr }}
+                                            {{ message.text|linebreaksbr }}
                                         </div>
 
-                                        {% if comment.attachment %}
-                                            <div class="attachments-list">
-                                                <a href="{{ comment.attachment.url }}" target="_blank" class="attachment-item">
-                                                    {{ comment.attachment.name }}
+                                        {% if message.attachment %}
+                                            {% if message.is_image %}
+                                                <a href="{{ message.attachment.url }}" target="_blank">
+                                                    <img src="{{ message.attachment.url }}" class="attachment-preview">
                                                 </a>
-                                            </div>
+                                            {% elif message.is_video %}
+                                                <video controls class="attachment-video">
+                                                    <source src="{{ message.attachment.url }}">
+                                                </video>
+                                            {% elif message.is_document %}
+                                                <a href="{{ message.attachment.url }}" target="_blank" class="attachment-doc">
+                                                    {{ message.attachment_filename }}
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ message.attachment.url }}" target="_blank" class="attachment-doc">
+                                                    {{ message.attachment_filename }}
+                                                </a>
+                                            {% endif %}
                                         {% endif %}
 
                                         <div class="message-time">
-                                            {{ comment.created_at }}
+                                            {{ message.created_at }}
                                         </div>
                                     </div>
                                 </div>
