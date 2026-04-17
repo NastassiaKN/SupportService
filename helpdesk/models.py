@@ -27,6 +27,9 @@ class Ticket(models.Model):
     def __str__(self):
         return self.title
 
+    def status_ticket(self):
+        return f'status-{self.status.replace('_', '-')}'
+
     def get_file_extension(self):
         if not self.attachment:
             return ''

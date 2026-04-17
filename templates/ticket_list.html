@@ -175,8 +175,23 @@ My Tickets
     {% block navbar %}
         <div class="logo">Support Service</div>
         <div class="nav-links">
-            <a href="/" class="primary-link">My tickets</a>
             <a href="/ticket_create/">Create ticket</a>
+
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="
+                    background: none;
+                    border: none;
+                    color: #475569;
+                    font-size: 15px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    margin-left: 20px;
+                    font-family: inherit;
+                ">
+                    Logout
+                </button>
+            </form>
         </div>
     {% endblock %}
 
@@ -186,10 +201,11 @@ My Tickets
                 <h1>My tickets</h1>
                 <p>Track your support requests, status updates, and assigned manager.</p>
             </div>
-
-            <div class="header-actions">
-                <a href="/ticket_create/" class="btn btn-primary">+ Create new ticket</a>
-            </div>
+            {% if tickets %}
+                <div class="header-actions">
+                    <a href="/ticket_create/" class="btn btn-primary">+ Create new ticket</a>
+                </div>
+            {% endif %}
         </div>
 
         <div class="tickets-summary">
@@ -203,25 +219,9 @@ My Tickets
                         <div class="ticket-card-top">
                             <h2 class="ticket-title">{{ ticket.title }}</h2>
 
-                            {% if ticket.status == 'new' %}
-                                <span class="status-badge status-new">
-                                    {% if ticket.get_status_display %}{{ ticket.get_status_display }}{% else %}New{% endif %}
-                                </span>
-                            {% elif ticket.status == 'in_progress' %}
-                                <span class="status-badge status-in-progress">
-                                    {% if ticket.get_status_display %}{{ ticket.get_status_display }}{% else %}In Progress{% endif %}
-                                </span>
-                            {% elif ticket.status == 'resolved' %}
-                                <span class="status-badge status-resolved">
-                                    {% if ticket.get_status_display %}{{ ticket.get_status_display }}{% else %}Resolved{% endif %}
-                                </span>
-                            {% elif ticket.status == 'closed' %}
-                                <span class="status-badge status-closed">
-                                    {% if ticket.get_status_display %}{{ ticket.get_status_display }}{% else %}Closed{% endif %}
-                                </span>
-                            {% else %}
-                                <span class="status-badge">{{ ticket.status }}</span>
-                            {% endif %}
+                            <span class="status-badge {{ ticket.status_ticket }}">
+                                {{ ticket.get_status_display }}
+                            </span>
                         </div>
 
                         <p class="ticket-description">

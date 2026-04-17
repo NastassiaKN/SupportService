@@ -422,15 +422,30 @@ Ticket Details
     {% block navbar %}
         <div class="logo">Support Service</div>
         <div class="nav-links">
-            <a href="/" class="primary-link">My tickets</a>
+            <a href="/tickets/" class="primary-link">My tickets</a>
             <a href="/ticket_create/">Create ticket</a>
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="
+                    background: none;
+                    border: none;
+                    color: #475569;
+                    font-size: 15px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    margin-left: 20px;
+                    font-family: inherit;
+                ">
+                    Logout
+                </button>
+            </form>
         </div>
     {% endblock %}
 
     {% block content %}
 
         <div class="back-link">
-            <a href="/">← Back to tickets</a>
+            <a href="/tickets/">← Back to tickets</a>
         </div>
 
         <div class="page-header">
@@ -445,17 +460,10 @@ Ticket Details
                 <div class="ticket-info">
                     <div>
                         <strong>Status:</strong><br>
-                        {% if ticket.status == 'new' %}
-                            <span class="status-badge status-new">{{ ticket.get_status_display|default:ticket.status }}</span>
-                        {% elif ticket.status == 'in_progress' %}
-                            <span class="status-badge status-in-progress">{{ ticket.get_status_display|default:ticket.status }}</span>
-                        {% elif ticket.status == 'resolved' %}
-                            <span class="status-badge status-resolved">{{ ticket.get_status_display|default:ticket.status }}</span>
-                        {% elif ticket.status == 'closed' %}
-                            <span class="status-badge status-closed">{{ ticket.get_status_display|default:ticket.status }}</span>
-                        {% else %}
-                            <span class="status-badge">{{ ticket.status }}</span>
-                        {% endif %}
+                            <span class="status-badge {{ ticket.status_ticket }}">
+                                {{ ticket.get_status_display }}
+                            </span>
+
                     </div>
 
                     <div>
@@ -486,6 +494,7 @@ Ticket Details
                         <strong>Description:</strong><br>
                         {{ ticket.description|linebreaks }}
                     </div>
+
 
                     {% if ticket.attachment %}
                         <div>
