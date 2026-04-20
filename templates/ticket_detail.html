@@ -415,6 +415,51 @@ Ticket Details
             color: #4338ca;
         }
 
+        .ticket-user-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .ticket-btn {
+            border: none;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ticket-btn-confirm {
+            background: #22c55e;
+            color: white;
+        }
+
+        .ticket-btn-confirm:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+        }
+
+        .ticket-btn-close {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .ticket-btn-close:hover {
+            background: #cbd5f5;
+            transform: translateY(-1px);
+        }
+
+        .ticket-user-actions-text {
+            width: 100%;
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: #475569;
+        }
+
     </style>
 {% endblock %}
 
@@ -422,7 +467,7 @@ Ticket Details
     {% block navbar %}
         <div class="logo">Support Service</div>
         <div class="nav-links">
-            <a href="/tickets/" class="primary-link">My tickets</a>
+            <a href="/" class="primary-link">My tickets</a>
             <a href="/ticket_create/">Create ticket</a>
             <form method="post" action="/logout/" style="display:inline;">
                 {% csrf_token %}
@@ -445,7 +490,7 @@ Ticket Details
     {% block content %}
 
         <div class="back-link">
-            <a href="/tickets/">← Back to tickets</a>
+            <a href="/">← Back to tickets</a>
         </div>
 
         <div class="page-header">
@@ -464,11 +509,27 @@ Ticket Details
                                 {{ ticket.get_status_display }}
                             </span>
 
-                    </div>
-
-                    <div>
-                        <strong>Created by:</strong><br>
-                        {{ ticket.created_by.username }}
+                        {% if ticket.status == 'resolved' %}
+                            <div class="ticket-user-actions">
+                                <p class="ticket-user-actions-text">
+                                    Support marked this ticket as resolved.
+                                </p>
+                                <form method="post" action="{% url 'ticket_confirm_resolved' ticket.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="ticket-btn ticket-btn-confirm">Confirm resolution</button>
+                                </form>
+                            </div>
+                        {% elif ticket.status == 'new' or ticket.status == 'in_progress' %}
+                            <div class="ticket-user-actions">
+                                <p class="ticket-user-actions-text">
+                                    You can close this ticket if your issue is no longer relevant.
+                                </p>
+                                <form method="post" action="{% url 'ticket_closed' ticket.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="ticket-btn ticket-btn-close">Close ticket</button>
+                                </form>
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div>
@@ -587,42 +648,48 @@ Ticket Details
                 </div>
 
                 <div class="reply-panel">
-                    <form method="post" enctype="multipart/form-data" class="reply-form">
-                        {% csrf_token %}
+                    {% if ticket.status != 'closed' %}
+                        <form method="post" enctype="multipart/form-data" class="reply-form">
+                            {% csrf_token %}
 
-                        {% if form.non_field_errors %}
-                            <div class="form-errors">
-                                {{ form.non_field_errors }}
-                            </div>
-                        {% endif %}
-
-                        <div>
-                            {{ form.text }}
-                            {% if form.text.errors %}
-                                <div class="errorlist">
-                                    {{ form.text.errors }}
+                            {% if form.non_field_errors %}
+                                <div class="form-errors">
+                                    {{ form.non_field_errors }}
                                 </div>
                             {% endif %}
-                        </div>
 
-                        <div class="reply-bottom">
-                            <div class="file-upload">
-                                <label class="file-label">
-                                    Attach file
-                                    {{ form.attachment }}
-                                </label>
-                                <span class="file-name">No file chosen</span>
+                            <div>
+                                {{ form.text }}
+                                {% if form.text.errors %}
+                                    <div class="errorlist">
+                                        {{ form.text.errors }}
+                                    </div>
+                                {% endif %}
                             </div>
 
-                            <button type="submit" class="send-btn">Send message</button>
-                        </div>
+                            <div class="reply-bottom">
+                                <div class="file-upload">
+                                    <label class="file-label">
+                                        Attach file
+                                        {{ form.attachment }}
+                                    </label>
+                                    <span class="file-name">No file chosen</span>
+                                </div>
 
-                        {% if form.attachment.errors %}
-                            <div class="errorlist">
-                                {{ form.attachment.errors }}
+                                <button type="submit" class="send-btn">Send message</button>
                             </div>
-                        {% endif %}
-                    </form>
+
+                            {% if form.attachment.errors %}
+                                <div class="errorlist">
+                                    {{ form.attachment.errors }}
+                                </div>
+                            {% endif %}
+                        </form>
+                    {% else %}
+                        <div class="closed-ticket-message">
+                            <p>🔒 This ticket is closed. You can no longer send messages.</p>
+                        </div>
+                    {% endif %}
                 </div>
             </section>
         </div>

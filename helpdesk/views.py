@@ -1,9 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
+from django.views.decorators.http import require_POST
+
 from .models import Ticket, Message
 
 from .forms import TicketForm, MessageForm
+from .autoassign_manager import *
 
 User = get_user_model()
 
@@ -15,9 +18,10 @@ def ticket_create(request):
         if form.is_valid():
             ticket = form.save(commit=False)
             ticket.created_by = request.user
+            ticket.assigned_to = get_available_manager()
             ticket.status = 'new'
             ticket.save()
-            return redirect('/tickets/')
+            return redirect('/')
     else:
         form = TicketForm()
 
@@ -35,6 +39,9 @@ def ticket_detail(request, ticket_id):
     referer = request.META.get('HTTP_REFERER')
 
     if request.method == 'POST':
+        if ticket.status == 'closed':
+            return redirect(referer)
+
         form = MessageForm(request.POST, request.FILES)
 
         if form.is_valid():
@@ -54,6 +61,24 @@ def ticket_detail(request, ticket_id):
     }
 
     return render(request, 'ticket_detail.html', context)
+
+@login_required
+@require_POST
+def ticket_confirm_resolved(request, ticket_id):
+    ticket = get_object_or_404(Ticket, pk=ticket_id, created_by=request.user)
+    if ticket.status == 'resolved':
+        ticket.status = 'closed'
+        ticket.save()
+    return redirect(f'/ticket/{ticket_id}')
+
+@login_required
+@require_POST
+def ticket_closed(request, ticket_id):
+    ticket = get_object_or_404(Ticket, pk=ticket_id, created_by=request.user)
+    if ticket.status == 'new' or ticket.status == 'in_progress':
+        ticket.status = 'closed'
+        ticket.save()
+    return redirect(f'/ticket/{ticket_id}')
 
 
 

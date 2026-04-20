@@ -14,15 +14,23 @@ class Ticket(models.Model):
         ('resolved', 'Resolved'),
         ('closed', 'Closed'),
     ]
+
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+
     title = models.CharField(max_length=200)
     description = models.TextField()
     attachment = models.FileField(upload_to='attachments/tickets', null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tickets')
-    assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_tickets', blank=True, null=True)
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='assigned_tickets', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
     status_updated_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
 
     def __str__(self):
         return self.title
@@ -48,6 +56,13 @@ class Ticket(models.Model):
         if not self.attachment:
             return ''
         return os.path.basename(self.attachment.name)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old_ticket = Ticket.objects.get(pk=self.pk)
+            if old_ticket.status != self.status:
+                self.status_updated_at = timezone.now()
+        super().save(*args, **kwargs)
 
 class Message(models.Model):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='messages')

@@ -159,7 +159,7 @@ Create Ticket
     {% block navbar %}
         <div class="logo">Support Service</div>
         <div class="nav-links">
-            <a href="/tickets/">My tickets</a>
+            <a href="/">My tickets</a>
             <form method="post" action="/logout/" style="display:inline;">
                 {% csrf_token %}
                 <button type="submit" style="
@@ -232,7 +232,7 @@ Create Ticket
                 </div>
 
                 <div class="form-actions">
-                    <a href="/tickets/" class="btn btn-secondary">Cancel</a>
+                    <a href="/" class="btn btn-secondary">Cancel</a>
                     <button type="submit" class="btn btn-primary">Submit ticket</button>
                 </div>
             </form>

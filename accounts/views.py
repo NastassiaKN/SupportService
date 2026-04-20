@@ -10,7 +10,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('/tickets/')
+            return redirect('/')
     else:
         form = RegisterForm()
     return render(request, 'register.html', {'form': form})
@@ -21,7 +21,9 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('/tickets/')
+            if request.user.is_staff:
+                return redirect('/admin/')
+            return redirect('/')
     else:
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
