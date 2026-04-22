@@ -25,3 +25,13 @@ class MessageForm(forms.ModelForm):
             })
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        text = cleaned_data.get('text')
+        attachment = cleaned_data.get('attachment')
+
+        if not text and not attachment:
+            raise forms.ValidationError('You must enter either a text or an attachment')
+        return cleaned_data
+
+

@@ -94,21 +94,5 @@ class TicketAdmin(admin.ModelAdmin):
                 kwargs['queryset'] = User.objects.filter(groups=support_group, is_active=True)
             except Group.DoesNotExist:
                 kwargs['queryset'] = User.objects.none()
-
+                
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

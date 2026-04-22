@@ -67,7 +67,7 @@ class Ticket(models.Model):
 class Message(models.Model):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='messages')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
-    text = models.TextField()
+    text = models.TextField(blank=True)
     attachment = models.FileField(upload_to='attachments/comments', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

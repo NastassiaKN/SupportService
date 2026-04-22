@@ -21,7 +21,7 @@ def ticket_create(request):
             ticket.assigned_to = get_available_manager()
             ticket.status = 'new'
             ticket.save()
-            return redirect('/')
+            return redirect('/tickets/')
     else:
         form = TicketForm()
 
@@ -80,8 +80,16 @@ def ticket_closed(request, ticket_id):
         ticket.save()
     return redirect(f'/ticket/{ticket_id}')
 
+def home_redirect(request):
+    user = request.user
 
+    if not user.is_authenticated:
+        return redirect('/login/')
 
+    if user.is_staff:
+        return redirect('/admin/')
+
+    return redirect('/tickets/')
 
 
 

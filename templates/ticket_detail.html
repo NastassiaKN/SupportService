@@ -460,6 +460,18 @@ Ticket Details
             color: #475569;
         }
 
+        .read-more {
+            color: #4f46e5;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 6px;
+            text-decoration: none;
+        }
+
+        .read-more:hover {
+            text-decoration: underline;
+        }
+
     </style>
 {% endblock %}
 
@@ -467,7 +479,7 @@ Ticket Details
     {% block navbar %}
         <div class="logo">Support Service</div>
         <div class="nav-links">
-            <a href="/" class="primary-link">My tickets</a>
+            <a href="/tickets/" class="primary-link">My tickets</a>
             <a href="/ticket_create/">Create ticket</a>
             <form method="post" action="/logout/" style="display:inline;">
                 {% csrf_token %}
@@ -490,7 +502,7 @@ Ticket Details
     {% block content %}
 
         <div class="back-link">
-            <a href="/">← Back to tickets</a>
+            <a href="/tickets/">← Back to tickets</a>
         </div>
 
         <div class="page-header">
@@ -553,7 +565,17 @@ Ticket Details
 
                     <div>
                         <strong>Description:</strong><br>
-                        {{ ticket.description|linebreaks }}
+                        <span id="short-text">
+                            {{ ticket.description|truncatechars:150|linebreaks }}
+                        </span>
+
+                        <span id="full-text" style="display: none;">
+                            {{ ticket.description|linebreaks }}
+                        </span>
+
+                        {% if ticket.description|length > 150 %}
+                            <a href="#" class="read-more" onclick="toggleText(event)">Read more</a>
+                        {% endif %}
                     </div>
 
 
@@ -712,7 +734,25 @@ Ticket Details
                 }
             });
         </script>
+        <script>
+        function toggleText(event) {
+            event.preventDefault();
 
+            const shortText = document.getElementById("short-text");
+            const fullText = document.getElementById("full-text");
+            const link = event.target;
+
+            if (fullText.style.display === "none") {
+                shortText.style.display = "none";
+                fullText.style.display = "inline";
+                link.textContent = "Show less";
+            } else {
+                shortText.style.display = "inline";
+                fullText.style.display = "none";
+                link.textContent = "Read more";
+            }
+        }
+        </script>
     {% endblock %}
 </div>
 
