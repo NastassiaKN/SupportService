@@ -1,5 +1,6 @@
 import os
 
+from django.core.validators import MaxLengthValidator
 from django.db import models
 
 from django.contrib.auth import get_user_model
@@ -22,7 +23,7 @@ class Ticket(models.Model):
     ]
 
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(validators=[MaxLengthValidator(2000)])
     attachment = models.FileField(upload_to='attachments/tickets', null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tickets')
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='assigned_tickets', blank=True, null=True)
@@ -67,7 +68,7 @@ class Ticket(models.Model):
 class Message(models.Model):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='messages')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
-    text = models.TextField(blank=True)
+    text = models.TextField(blank=True, validators=[MaxLengthValidator(1000)])
     attachment = models.FileField(upload_to='attachments/comments', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

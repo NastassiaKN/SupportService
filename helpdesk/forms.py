@@ -11,6 +11,7 @@ class TicketForm(forms.ModelForm):
             }),
             'description': forms.Textarea(attrs={
                 'placeholder': 'Describe the issue in detail...',
+                'maxlength': 2000,
             })
         }
 
@@ -22,6 +23,7 @@ class MessageForm(forms.ModelForm):
             'text': forms.Textarea(attrs={
                 'placeholder': 'Write your message...',
                 'rows': 2,
+                'maxlength': 1000,
             })
         }
 

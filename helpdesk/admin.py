@@ -25,6 +25,11 @@ class MessageInline(admin.TabularInline):
     exclude = ('author',)
     can_delete = False
 
+    def has_add_permission(self, request, obj=None):
+        if obj and obj.status == 'closed':
+            return False
+        return super().has_add_permission(request, obj)
+
 @admin.register(Ticket)
 class TicketAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'created_by', 'priority', 'status', 'assigned_to', 'created_at')
@@ -76,10 +81,12 @@ class TicketAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     def save_formset(self, request, form, formset, change):
-        instances = formset.save(commit=False)
+        ticket = form.instance
 
-        for obj in formset.deleted_objects:
-            obj.delete()
+        if ticket.status == 'closed':
+            return
+
+        instances = formset.save(commit=False)
 
         for instance in instances:
             if not instance.pk:
