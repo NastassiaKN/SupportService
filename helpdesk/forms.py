@@ -36,4 +36,22 @@ class MessageForm(forms.ModelForm):
             raise forms.ValidationError('You must enter either a text or an attachment')
         return cleaned_data
 
+class TicketAdminForm(forms.ModelForm):
+    new_message_text = forms.CharField(
+        required=False,
+        label='New message',
+        widget=forms.Textarea(attrs={
+            'rows': 4,
+            'style': 'width: 100%; min-height: 140px;',
+            'placeholder': 'Write your message...'
+        })
+    )
 
+    new_message_attachment = forms.FileField(
+        required=False,
+        label='Attachment',
+    )
+
+    class Meta:
+        model = Ticket
+        fields = '__all__'

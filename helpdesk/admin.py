@@ -1,8 +1,11 @@
 from django.contrib import admin
 from django.db.models import Q
+from django.utils.html import format_html_join, format_html
+from typing import Any
 
 from helpdesk.models import Ticket, Message
 from django.contrib.auth.models import Group, User
+from helpdesk.forms import TicketAdminForm
 
 class SupportManagerFilter(admin.SimpleListFilter):
     title = 'Support managers'
@@ -18,26 +21,14 @@ class SupportManagerFilter(admin.SimpleListFilter):
             return queryset.filter(assigned_to=self.value())
         return queryset
 
-class MessageInline(admin.TabularInline):
-    model = Message
-    extra = 0
-    readonly_fields = ('created_at',)
-    exclude = ('author',)
-    can_delete = False
-
-    def has_add_permission(self, request, obj=None):
-        if obj and obj.status == 'closed':
-            return False
-        return super().has_add_permission(request, obj)
-
 @admin.register(Ticket)
 class TicketAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'created_by', 'priority', 'status', 'assigned_to', 'created_at')
     search_fields = ('title', 'created_by__username')
     list_filter = ('status', 'priority', 'assigned_to__username', 'created_at')
     ordering = ('-created_at',)
-    readonly_fields = ('created_at', 'updated_at', 'status_updated_at')
-    inlines = [MessageInline]
+    form = TicketAdminForm
+    readonly_fields = ('created_at', 'updated_at', 'status_updated_at', 'chat_history', 'attachment_preview')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -80,19 +71,16 @@ class TicketAdmin(admin.ModelAdmin):
 
         super().save_model(request, obj, form, change)
 
-    def save_formset(self, request, form, formset, change):
-        ticket = form.instance
+        new_message_text = form.cleaned_data.get('new_message_text')
+        new_message_attachment = form.cleaned_data.get('new_message_attachment')
 
-        if ticket.status == 'closed':
-            return
-
-        instances = formset.save(commit=False)
-
-        for instance in instances:
-            if not instance.pk:
-                instance.author = request.user
-            instance.save()
-        formset.save_m2m()
+        if obj.status != 'closed' and (new_message_text or new_message_attachment):
+            Message.objects.create(
+                ticket=obj,
+                author=request.user,
+                text=new_message_text or '',
+                attachment=new_message_attachment
+            )
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'assigned_to':
@@ -103,3 +91,127 @@ class TicketAdmin(admin.ModelAdmin):
                 kwargs['queryset'] = User.objects.none()
                 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets : list[tuple[str, dict[str, Any]]] = [
+            ('Ticket information', {
+                'fields': (
+                    'title',
+                    'description',
+                    'attachment',
+                    'attachment_preview',
+                    'created_at',
+                    'created_by',
+                    'status',
+                    'priority',
+                    'status_updated_at',
+                    'assigned_to',
+                    'updated_at',
+                )
+            }),
+            ('Chat history', {
+                'fields': (
+                    'chat_history',
+                )
+            }),
+        ]
+        if not obj or obj.status != 'closed':
+            fieldsets.append(
+                ('Add new message', {
+                    'fields': (
+                        'new_message_text',
+                        'new_message_attachment',
+                    )
+                }),
+            )
+        return fieldsets
+
+    def chat_history(self, obj):
+        if not obj:
+            return 'No messages yet'
+
+        messages = obj.messages.all().order_by('created_at')
+
+        if not messages:
+            return 'No messages yet'
+
+        return format_html_join(
+            '',
+            '''
+                    <div style="width: 100%;max-width: 100%;min-height: 70px;margin-bottom:12px; padding:12px; 
+                        border:1px solid #e2e8f0; border-radius:8px;box-sizing: border-box;">
+                        <strong>{}</strong><br>
+                        <small>{}</small>
+                        <div style="margin-top:8px; white-space:pre-wrap;overflow-wrap: break-word;
+                            word-break: break-word;">{}</div>
+                        {}
+                    </div>
+                    ''',
+            (
+            (
+                message.author.username,
+                message.created_at.strftime('%d.%m.%Y %H:%M'),
+                message.text or '',
+                self.message_attachment_preview(message)
+            )
+                for message in messages
+            )
+        )
+    chat_history.short_description = 'Chat history'
+
+    def attachment_preview(self, obj):
+        if not obj.attachment:
+            return '-'
+
+        url = obj.attachment.url
+        name = obj.attachment.name.lower()
+
+        if name.endswith(('.jpg', '.jpeg', '.png')):
+            return format_html(
+                '<a href="{}" target="_blank">'
+                '<img src="{}" style="max-width:160px; max-height:160px; border-radius:8px;">'
+                '</a>',
+                url, url
+            )
+
+        if name.endswith(('.mp4',)):
+            return format_html(
+                '<video controls style="max-width:240px; max-height:160px; border-radius:8px;">'
+                '<source src="{}">'
+                'Your browser does not support the video tag.'
+                '</video>',
+                url
+            )
+
+        return '-'
+
+    attachment_preview.short_description = 'Attachment preview'
+
+    def message_attachment_preview(self, message):
+        if not message.attachment:
+            return ''
+
+        url = message.attachment.url
+        name = message.attachment.name.lower()
+
+        if name.endswith(('.jpg', '.jpeg', '.png')):
+            return format_html(
+                '<br><a href="{}" target="_blank">'
+                '<img src="{}" style="max-width:160px; max-height:160px; border-radius:8px; margin-top:8px;">'
+                '</a>',
+                url, url
+            )
+
+        if name.endswith(('.mp4',)):
+            return format_html(
+                '<br><video controls style="max-width:240px; max-height:160px; border-radius:8px; margin-top:8px;">'
+                '<source src="{}">'
+                '</video>',
+                url
+            )
+
+        return format_html(
+            '<br><a href="{}" target="_blank" style="margin-top:8px; display:inline-block;">📄 {}</a>',
+        url,
+        name
+        )
