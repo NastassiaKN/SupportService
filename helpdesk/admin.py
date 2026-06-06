@@ -28,7 +28,7 @@ class TicketAdmin(admin.ModelAdmin):
     list_filter = ('status', 'priority', 'assigned_to__username', 'created_at')
     ordering = ('-created_at',)
     form = TicketAdminForm
-    readonly_fields = ('created_at', 'updated_at', 'status_updated_at', 'chat_history', 'attachment_preview')
+    readonly_fields = ('created_at', 'updated_at', 'status_updated_at', 'chat_history', 'attachment_preview', 'created_by')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -89,7 +89,7 @@ class TicketAdmin(admin.ModelAdmin):
                 kwargs['queryset'] = User.objects.filter(groups=support_group, is_active=True)
             except Group.DoesNotExist:
                 kwargs['queryset'] = User.objects.none()
-                
+
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_fieldsets(self, request, obj=None):
@@ -127,9 +127,6 @@ class TicketAdmin(admin.ModelAdmin):
         return fieldsets
 
     def chat_history(self, obj):
-        if not obj:
-            return 'No messages yet'
-
         messages = obj.messages.all().order_by('created_at')
 
         if not messages:
