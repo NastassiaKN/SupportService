@@ -103,6 +103,23 @@ The project is built using the **MVT (Model-View-Template)** architecture:
 
 ---
 
+## Tests
+
+The project includes a minimal set of unit tests covering core functionality of the system.
+
+Tests ensure:
+- ticket and message creation
+- restriction on sending messages for closed tickets
+- auto-assignment logic
+- manual ticket assignment by admin
+
+To run tests:
+```
+python manage.py test
+```
+
+---
+
 ## Running with Docker
 
 ### 1. Clone repository
