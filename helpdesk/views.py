@@ -6,7 +6,7 @@ from django.views.decorators.http import require_POST
 from .models import Ticket, Message
 
 from .forms import TicketForm, MessageForm
-from .autoassign_manager import *
+from .autoassign_manager import get_available_manager
 
 User = get_user_model()
 
